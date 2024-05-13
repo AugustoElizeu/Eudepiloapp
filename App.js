@@ -4,11 +4,12 @@ import { StyleSheet, Text, View,Image,TouchableOpacity, ImageBackground,TextInpu
 //npm install all below
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import MainScreen from './Screen/MainScreen'
 import PhoneInput from './Screen/PhoneInput'
 
 const Stack = createNativeStackNavigator();
 
-function LoginScreen(){
+function LoginScreen({navigation}){
   return (
   <View style={styles.container}>
     <View style={{  justifyContent:'center', alignItems:'center',}}>
@@ -23,7 +24,7 @@ function LoginScreen(){
         <View style={{ position:"relative", left:80, bottom:10,}}> 
             <Text style={{  color:'#0000ff',}} onPress={() => navigation.navigate('SignUpScreen')}>Esqueceu Senha?</Text>
         </View>
-        <TouchableOpacity style={styles.buttonLogin}  onPress={() => navigation.navigate('LoginScreen')}>
+        <TouchableOpacity style={styles.buttonLogin} onPress={() => navigation.navigate('MainScreen')}>
               <Text style={styles.buttonTextLogin}>Entrar</Text>
          </TouchableOpacity>
     </View>
@@ -35,13 +36,13 @@ function ForgotScreen(){
   window.alert("HAHAHA SIFU GAMEPLAY")
 
 }
-function SignUpScreen(){
+function SignUpScreen({navigation}){
   
 
   return (
   <View style={styles.container}>
       <View>
-        <Text style={styles.tituloStyle}>WE NEVER FADE AWAY</Text>
+        <Text style={styles.tituloStyle}>Cadastre-se</Text>
       </View>
       <View style={styles.viewShadowCadastro}>
         <Text style={styles.textCadastroLabel}>Nome de Usuario</Text>
@@ -57,7 +58,7 @@ function SignUpScreen(){
         <TextInput style={styles.textCadastroArea} secureTextEntry={true}></TextInput>
         <Text style={styles.textCadastroLabel}>Confirme Senha</Text>
         <TextInput style={styles.textCadastroArea} secureTextEntry={true}></TextInput>
-        <TouchableOpacity style={styles.buttonCadastro}>
+        <TouchableOpacity style={styles.buttonCadastro} onPress={() => navigation.navigate('HomeScr')}>
             <Text style={styles.buttonTextCadastro}>Cadastrar-se</Text>
         </TouchableOpacity>
       </View>
@@ -106,6 +107,7 @@ export default function App() {
         <Stack.Screen name="HomeScr" component={HomeScr} options={{ headerShown: false }}/>
  	      <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerTitle: '' }}/>
         <Stack.Screen name='SignUpScreen' component={SignUpScreen} options={{headerTitle: ''}}/>
+        <Stack.Screen name='MainScreen' component={MainScreen} options={{headerShown: false}}/>
       </Stack.Navigator>
     </NavigationContainer>
 );
@@ -228,7 +230,7 @@ const styles = StyleSheet.create({
   },
   tituloStyle:{
         fontSize: 25,
-        color: 'red'
+        color: 'purple'
   },
   textCadastroArea:{
     backgroundColor: 'lightgray',
