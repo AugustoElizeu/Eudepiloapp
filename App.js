@@ -4,13 +4,16 @@ import { StyleSheet, Text, View,Image,TouchableOpacity, ImageBackground,TextInpu
 //npm install all below
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import LoginScreen from './Screen/LoginScreen';
 import SignUpScreen from './Screen/SignUpScreen';
 import Agendamento from './Screen/MainScreen/Agendamento';
-import MScreen from './Screen/MScreen';
 import MainHud from './Screen/MainScreen/MainHud';
+import ProfileScreen from './Screen/MainScreen/ProfileScreen';
+import { FontAwesome } from '@expo/vector-icons';
 
 const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 function HomeScr({navigation}){
 
@@ -52,14 +55,45 @@ function App(){
     <Stack.Screen name="HomeScr" component={HomeScr} options={{ headerShown: false }} />
     <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerTitle: '' }} />
     <Stack.Screen name="SignUpScreen" component={SignUpScreen} options={{ headerTitle: '' }} />
-    <Stack.Screen name="MainScreen" component={MainHud} options={{ headerShown: false }} />
-    <Stack.Screen name="Agendamento" component={Agendamento} options={{ headerTitle: '' }} />
+    <Stack.Screen name="Agendamento" component={Agendamento} options={{ headerTitle: 'Agendar' }} />
+    <Stack.Screen name="MainScreen" component={MTabs} options={{ headerShown: false }} />
   </Stack.Navigator>
 </NavigationContainer>
    );
 }
 
+function MTabs() {
+  return (
+      <Tab.Navigator
+        screenOptions={({ route }) => ({
+          tabBarIcon: ({ focused, color, size }) => {
+            let iconName;
 
+            if (route.name === 'Home') {
+              iconName = focused ? 'home' : 'home';
+            } else if (route.name === 'Profile') {
+              iconName = focused ? 'user' : 'user';
+            }
+
+            return <FontAwesome name={iconName} size={size} color={color} />;
+          },
+          tabBarActiveTintColor: 'purple',
+          tabBarInactiveTintColor: 'gray',
+        })}
+      >
+        <Tab.Screen 
+          name="Home" 
+          component={MainHud} 
+          options={{ headerShown: false }}  // Remover o header da tela MainHud
+        />
+        <Tab.Screen 
+          name="Profile" 
+          component={ProfileScreen} 
+          options={{ headerShown: false }}  // Remover o header da tela ProfileScreen
+        />
+      </Tab.Navigator>
+  );
+}
 
 export default App
 

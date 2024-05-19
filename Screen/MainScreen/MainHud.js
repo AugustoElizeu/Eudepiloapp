@@ -22,10 +22,6 @@ const data = [
     title: "Outros",
     image: "https://www.unicesumar.edu.br/blog/wp-content/uploads/2018/12/estetica-e-cosmetica.jpg",
   },
-  {
-    title: "",
-    image: "https://htmlcolorcodes.com/assets/images/colors/light-gray-color-solid-background-1920x1080.png",
-  }
 ];
 
 const RenderItem = ({ item, navigation }) => (
