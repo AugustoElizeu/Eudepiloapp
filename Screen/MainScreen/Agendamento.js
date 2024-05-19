@@ -1,22 +1,15 @@
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, Button } from 'react-native';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, Pressable } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Picker } from '@react-native-picker/picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 function Agendamento() {
-  const [selectedValue, setSelectedValue] = useState("java");
-
+  const [selectedValue, setSelectedValue] = useState("12:00");
+  const [selectedValue1, setSelectedValue1] = useState("Depilação de orelha");
   const [date, setDate] = useState(new Date());
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [selectedDate, setSelectedDate] = useState('');
-
-  // Função para lidar com a alteração da data
-  const onChangeDate = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    setShowDatePicker(Platform.OS === 'ios');
-    setDate(currentDate);
-  };
 
   const onDayPress = (day) => {
     setSelectedDate(day.dateString);
@@ -24,20 +17,38 @@ function Agendamento() {
 
   const today = new Date();
   const minDate = today.toISOString().split('T')[0]; // Formato yyyy-MM-dd
-  const minTime = new Date(today.setHours(0, 0, 0));  // 12 AM
-  const maxTime = new Date(today.setHours(21, 0, 0)); // 9 PM
+  const minTime = new Date();
+  minTime.setHours(12, 0, 0); // 12 PM
+  const maxTime = new Date();
+  maxTime.setHours(21, 0, 0); // 9 PM
+
+  const handleDateChange = (event, selectedDate) => {
+    const currentDate = selectedDate || date;
+    const hours = currentDate.getHours();
+    if (hours < 12 || hours > 21) {
+      return;
+    }
+    setShowDatePicker(false);
+    setDate(currentDate);
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString('pt-BR');
+  };
+
+  const [modalVisible, setModalVisible] = useState(false);
 
   return (
     <View style={styles.container}>
-      <Text style={{fontSize:32, margin:5}}>Placeholder</Text>
-      <Text style={{fontSize:18, margin:5}}>Opção de serviço</Text>
-      <Picker selectedValue={selectedValue} style={styles.servico} onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}>
+      <Text style={{ fontSize: 32, margin: 5 }}>Placeholder</Text>
+      <Text style={{ fontSize: 18, margin: 5 }}>Opção de serviço</Text>
+      <Picker selectedValue={selectedValue1} style={styles.servico} onValueChange={(itemValue, itemIndex) => setSelectedValue1(itemValue)}>
         <Picker.Item label="Depilação de orelha" value="Depilação de orelha" />
         <Picker.Item label="Depilação de Axila" value="Depilação de Axila" />
         <Picker.Item label="Depilação de perna" value="Depilação de perna" />
       </Picker>
       
-      <Text style={{fontSize:18, margin:5}}>Escolha o horário</Text>
+      <Text style={{ fontSize: 18, margin: 5 }}>Escolha o horário</Text>
       <Picker selectedValue={selectedValue} style={styles.picker} onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}>
         <Picker.Item label="12:00" value="12:00" />
         <Picker.Item label="13:00" value="13:00" />
@@ -51,7 +62,7 @@ function Agendamento() {
         <Picker.Item label="21:00" value="21:00" />
       </Picker>
 
-      <Text style={{fontSize:18, margin:15}}>Escolha um dia</Text>
+      <Text style={{ fontSize: 18, margin: 5 }}>Escolha um dia</Text>
       <Calendar
         style={styles.calendar}
         onDayPress={onDayPress}
@@ -59,6 +70,43 @@ function Agendamento() {
         minDate={minDate}
       />
 
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={modalVisible}
+        onRequestClose={() => {
+          Alert.alert('Modal has been closed.');
+          setModalVisible(!modalVisible);
+        }}>
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <Text style={styles.modalText}>Consulta Marcada</Text>
+            <Text style={styles.modalText}>Dia {formatDate(selectedDate)} às {selectedValue}</Text>
+            <Text>{selectedValue1}</Text>
+            <Pressable
+              style={[styles.button, styles.buttonClose]}
+              onPress={() => setModalVisible(!modalVisible)}>
+              <Text style={styles.textStyle}>Fechar</Text>
+            </Pressable>
+          </View>
+        </View>
+      </Modal>
+
+      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(!modalVisible)}>
+          <Text style={{ color: 'white' }}>Agendar</Text>
+      </TouchableOpacity>
+
+      {showDatePicker && (
+        <DateTimePicker
+          testID="dateTimePicker"
+          value={date}
+          mode="time"
+          display="default"
+          onChange={handleDateChange}
+          minimumDate={minTime}
+          maximumDate={maxTime}
+        />
+      )}
     </View>
   );
 }
@@ -68,20 +116,20 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
-  },titulo:{
-    fontSize:24,
-
   },
-  servico:{
-    margin:10,
+  titulo: {
+    fontSize: 24,
+  },
+  servico: {
+    margin: 10,
     height: 50,
     width: 300,
-    alignItems:'center',
+    alignItems: 'center',
     alignContent: 'center',
-    backgroundColor:'#e6e6e6',
+    backgroundColor: '#e6e6e6',
   },
   picker: {
-    margin:10,
+    margin: 10,
     height: 50,
     width: 120,
     backgroundColor: '#e6e6e6',
@@ -89,9 +137,50 @@ const styles = StyleSheet.create({
   selectedValue: {
     marginTop: 20,
     fontSize: 18,
-  },calendar:{
-    borderRadius:10,
-  }
+  },
+  calendar: {
+    borderRadius: 10,
+  },
+  button: {
+    width: 230,
+    height: 40,
+    backgroundColor: '#723172',
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 10,
+    margin: 10,
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    top: '50%',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonOpen: {
+    backgroundColor: '#F194FF',
+  },
+  buttonClose: {
+    backgroundColor: '#723172',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+  },
 });
 
 export default Agendamento;
