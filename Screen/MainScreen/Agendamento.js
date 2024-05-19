@@ -117,9 +117,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  titulo: {
-    fontSize: 24,
-  },
   servico: {
     margin: 10,
     height: 50,
@@ -133,10 +130,6 @@ const styles = StyleSheet.create({
     height: 50,
     width: 120,
     backgroundColor: '#e6e6e6',
-  },
-  selectedValue: {
-    marginTop: 20,
-    fontSize: 18,
   },
   calendar: {
     borderRadius: 10,
@@ -165,9 +158,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  buttonOpen: {
-    backgroundColor: '#F194FF',
   },
   buttonClose: {
     backgroundColor: '#723172',
