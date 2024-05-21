@@ -91,7 +91,6 @@ function SignUpScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [CPF, setCPF] = useState('');
-
   return (
     <View style={styles.container}>
       <View>

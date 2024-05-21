@@ -22,7 +22,6 @@ async function handleLogin(email, password, navigation) {
 function LoginScreen({ navigation }) {
   const [email, setEmail] = React.useState('');
   const [password, setPassword] = React.useState('');
-
   return (
     <View style={styles.container}>
       <View style={{ justifyContent: 'center', alignItems: 'center' }}>

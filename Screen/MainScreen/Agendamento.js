@@ -1,15 +1,44 @@
-import React, { useState } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, Modal, Pressable } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { StyleSheet, Text, View, TouchableOpacity, Modal, Pressable, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Picker } from '@react-native-picker/picker';
-import DateTimePicker from '@react-native-community/datetimepicker';
+import { depilacao, sobrancelha, esteticaFacial, cabelo, Outros } from './Data';
 
-function Agendamento() {
-  const [selectedValue, setSelectedValue] = useState("12:00");
-  const [selectedValue1, setSelectedValue1] = useState("Depilação de orelha");
-  const [date, setDate] = useState(new Date());
-  const [showDatePicker, setShowDatePicker] = useState(false);
+function Agendamento({ route }) {
+  const [selectedValue, setSelectedValue] = useState('12:00');
+  const [selectedValue1, setSelectedValue1] = useState('');
   const [selectedDate, setSelectedDate] = useState('');
+  const [modalVisible, setModalVisible] = useState(false);
+  const [serviceOptions, setServiceOptions] = useState([]);
+
+  const { item } = route.params;
+
+  useEffect(() => {
+    // Map the item.title to the corresponding service list
+    const mapServiceOptions = () => {
+      switch (item.title) {
+        case 'Depilação':
+          setServiceOptions(depilacao);
+          break;
+        case 'Sobrancelha':
+          setServiceOptions(sobrancelha);
+          break;
+        case 'Estética Facial':
+          setServiceOptions(esteticaFacial);
+          break;
+        case 'Cabelo':
+          setServiceOptions(cabelo);
+          break;
+        case 'Outros':
+          setServiceOptions(Outros);
+          break;
+        default:
+          setServiceOptions([]);
+      }
+    };
+
+    mapServiceOptions();
+  }, [item.title]);
 
   const onDayPress = (day) => {
     setSelectedDate(day.dateString);
@@ -17,39 +46,39 @@ function Agendamento() {
 
   const today = new Date();
   const minDate = today.toISOString().split('T')[0]; // Formato yyyy-MM-dd
-  const minTime = new Date();
-  minTime.setHours(12, 0, 0); // 12 PM
-  const maxTime = new Date();
-  maxTime.setHours(21, 0, 0); // 9 PM
-
-  const handleDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || date;
-    const hours = currentDate.getHours();
-    if (hours < 12 || hours > 21) {
-      return;
-    }
-    setShowDatePicker(false);
-    setDate(currentDate);
-  };
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('pt-BR');
   };
 
-  const [modalVisible, setModalVisible] = useState(false);
+  const handleAgendar = () => {
+    if (!selectedDate || !selectedValue || !selectedValue1) {
+      Alert.alert('Erro', 'Por favor, selecione uma data, horário e serviço.');
+      return;
+    }
+
+    const agendamento = {
+      data: selectedDate,
+      horario: selectedValue,
+      servico: selectedValue1,
+    };
+
+    // Aqui você pode salvar o agendamento em algum lugar, por exemplo, AsyncStorage ou uma API
+    setModalVisible(true);
+  };
 
   return (
     <View style={styles.container}>
-      <Text style={{ fontSize: 32, margin: 5 }}>Placeholder</Text>
+      <Text style={{ fontSize: 32, margin: 5 }}>{item.title}</Text>
       <Text style={{ fontSize: 18, margin: 5 }}>Opção de serviço</Text>
-      <Picker selectedValue={selectedValue1} style={styles.servico} onValueChange={(itemValue, itemIndex) => setSelectedValue1(itemValue)}>
-        <Picker.Item label="Depilação de orelha" value="Depilação de orelha" />
-        <Picker.Item label="Depilação de Axila" value="Depilação de Axila" />
-        <Picker.Item label="Depilação de perna" value="Depilação de perna" />
+      <Picker selectedValue={selectedValue1} style={styles.servico} onValueChange={(itemValue) => setSelectedValue1(itemValue)}>
+        {serviceOptions.map((service, index) => (
+          <Picker.Item enabled={index !== 0} key={index} label={service.title} value={service.title} />
+        ))}
       </Picker>
       
       <Text style={{ fontSize: 18, margin: 5 }}>Escolha o horário</Text>
-      <Picker selectedValue={selectedValue} style={styles.picker} onValueChange={(itemValue, itemIndex) => setSelectedValue(itemValue)}>
+      <Picker selectedValue={selectedValue} style={styles.picker} onValueChange={(itemValue) => setSelectedValue(itemValue)}>
         <Picker.Item label="12:00" value="12:00" />
         <Picker.Item label="13:00" value="13:00" />
         <Picker.Item label="14:00" value="14:00" />
@@ -92,25 +121,12 @@ function Agendamento() {
         </View>
       </Modal>
 
-      <TouchableOpacity style={styles.button} onPress={() => setModalVisible(!modalVisible)}>
-          <Text style={{ color: 'white' }}>Agendar</Text>
+      <TouchableOpacity style={styles.button} onPress={handleAgendar}>
+        <Text style={{ color: 'white' }}>Agendar</Text>
       </TouchableOpacity>
-
-      {showDatePicker && (
-        <DateTimePicker
-          testID="dateTimePicker"
-          value={date}
-          mode="time"
-          display="default"
-          onChange={handleDateChange}
-          minimumDate={minTime}
-          maximumDate={maxTime}
-        />
-      )}
     </View>
   );
 }
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,

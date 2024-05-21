@@ -1,3 +1,4 @@
+// MainHud.js
 import React from 'react';
 import { StyleSheet, FlatList, Text, View, Image, TouchableOpacity } from 'react-native';
 
@@ -26,7 +27,7 @@ const data = [
 
 const RenderItem = ({ item, navigation }) => (
   <View style={styles.item}>
-    <TouchableOpacity onPress={() => navigation.navigate('Agendamento')}>
+    <TouchableOpacity onPress={() => navigation.navigate('Agendamento', { item })}>
       <Image source={{ uri: item.image }} style={styles.banner2} />
       <Text style={styles.subtitle}>{item.title}</Text>
     </TouchableOpacity>
@@ -48,6 +49,7 @@ function MainHud({ navigation }) {
     </View>
   );
 }
+
 export default MainHud;
 
 const styles = StyleSheet.create({
