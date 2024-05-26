@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
-import * as ImagePicker from 'expo-image-picker';
 
 function ProfileScreen({navigation}) {
   const [userData, setUserData] = useState({
