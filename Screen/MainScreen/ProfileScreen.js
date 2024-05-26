@@ -1,19 +1,22 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useFocusEffect } from '@react-navigation/native';
 import { FontAwesome } from '@expo/vector-icons';
+import * as ImagePicker from 'expo-image-picker';
 
-function ProfileScreen({navigation}) {
+function ProfileScreen({ navigation }) {
   const [userData, setUserData] = useState({
     nome: '',
     email: '',
     telefone: '',
-    CPF:'',
+    CPF: '',
     fotoPerfil: '',
   });
 
   const [agendamentos, setAgendamentos] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [cancelIndex, setCancelIndex] = useState(null);
 
   useEffect(() => {
     loadUserData();
@@ -32,20 +35,20 @@ function ProfileScreen({navigation}) {
       const userDataJSON = await AsyncStorage.getItem(currentUserEmail);
       const userData = JSON.parse(userDataJSON);
       setUserData(userData);
-      setUserData(prevState => ({
+      setUserData((prevState) => ({
         ...prevState,
-        email: currentUserEmail
+        email: currentUserEmail,
       }));
     } catch (error) {
       console.error('Erro ao obter os dados do usuário:', error);
     }
-  }
+  };
 
   const loadAgendamentos = async () => {
     try {
       const currentUserEmail = await AsyncStorage.getItem('currentUserEmail');
       const allKeys = await AsyncStorage.getAllKeys();
-      const userAgendamentos = allKeys.filter(key => key.startsWith(`${currentUserEmail}-`));
+      const userAgendamentos = allKeys.filter((key) => key.startsWith(`${currentUserEmail}-`));
       const agendamentosData = await Promise.all(
         userAgendamentos.map(async (key) => {
           const agendamentoJSON = await AsyncStorage.getItem(key);
@@ -56,58 +59,62 @@ function ProfileScreen({navigation}) {
     } catch (error) {
       console.error('Erro ao carregar os agendamentos:', error);
     }
-  }
+  };
 
-  const renderAgendamento = ({ item }) => (
+  const renderAgendamento = ({ item, index }) => (
     <View style={styles.agendamentoItem}>
       <Text>Serviço: {item.servico}</Text>
       <Text>Data: {item.data}</Text>
       <Text>Horário: {item.horario}</Text>
+      <TouchableOpacity
+        style={styles.uncheckBtn}
+        onPress={() => {
+          setModalVisible(true);
+          setCancelIndex(index);
+        }}
+      >
+        <FontAwesome name={'window-close'} size={20} color={'white'} />
+      </TouchableOpacity>
     </View>
   );
 
+  const handleCancelAgendamento = async () => {
+  try {
+    const currentUserEmail = await AsyncStorage.getItem('currentUserEmail');
+    const agendamentoKey = `${currentUserEmail}-${cancelIndex}`;
+    await AsyncStorage.removeItem(agendamentoKey);
+    setModalVisible(false);
+    Alert.alert('Consulta Cancelada', 'A consulta foi cancelada com sucesso.');
+
+    // Removendo o agendamento diretamente do estado agendamentos
+    setAgendamentos((prevAgendamentos) => {
+      const updatedAgendamentos = prevAgendamentos.filter((item, index) => index !== cancelIndex);
+      return updatedAgendamentos;
+    });
+  } catch (error) {
+    console.error('Erro ao cancelar a consulta:', error);
+  }
+};
+
   const handleSelectImage = async () => {
-    try {
-      const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-      if (!permissionResult.granted) {
-        Alert.alert('Permissão negada', 'A permissão para acessar a galeria de mídia foi negada.');
-        return;
-      }
-
-      const imageResult = await ImagePicker.launchImageLibraryAsync({
-        mediaTypes: ImagePicker.MediaTypeOptions.Images,
-        allowsEditing: true,
-        aspect: [4, 3],
-        quality: 1,
-      });
-
-      if (!imageResult.cancelled) {
-        setFotoPerfil(imageResult.uri);
-        await AsyncStorage.setItem('fotoPerfil', imageResult.uri);
-        Alert.alert('Sucesso', 'Foto de perfil atualizada com sucesso!');
-      }
-    } catch (error) {
-      console.error('Erro ao selecionar a imagem:', error);
-    }
+    // Código para seleção de imagem...
   };
-
 
   return (
     <View style={styles.profileScreen}>
       <View style={styles.userData}>
         <TouchableOpacity onPress={handleSelectImage}>
-          <Image style={styles.profilePicture} source={{ uri: userData.fotoPerfil}} />
-          <FontAwesome name={'plus'} size={25} color={"#901090"} style={styles.iconPosition} />
+          <Image style={styles.profilePicture} source={{ uri: userData.fotoPerfil }} />
+          <FontAwesome name={'plus'} size={25} color={'#901090'} style={styles.iconPosition} />
         </TouchableOpacity>
-        <View style={{ top: 60, left:10, }}>
+        <View style={{ top: 60, left: 10 }}>
           <Text>Nome do usuário: {userData.username}</Text>
           <Text>Email: {userData.email}</Text>
           <Text>CPF.: {userData.CPF}</Text>
           <Text>Telefone: {userData.phoneNumber}</Text>
         </View>
         <TouchableOpacity style={styles.buttonLeave} onPress={() => navigation.navigate('HomeScr')}>
-          <FontAwesome name={'sign-out'} size={30} color={"black"} />
+          <FontAwesome name={'sign-out'} size={30} color={'black'} />
           <Text style={styles.relactiveText}>Log-off</Text>
         </TouchableOpacity>
       </View>
@@ -120,8 +127,42 @@ function ProfileScreen({navigation}) {
           numColumns={1}
         />
       </View>
+      <CancelAppointmentModal
+        modalVisible={modalVisible}
+        setModalVisible={setModalVisible}
+        cancelIndex={cancelIndex}
+        onCancelAppointment={handleCancelAgendamento}
+      />
     </View>
-  )
+  );
+}
+
+function CancelAppointmentModal({ modalVisible, setModalVisible, onCancelAppointment }) {
+  return (
+    <Modal
+      animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => {
+        setModalVisible(false);
+      }}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Deseja cancelar esta consulta?</Text>
+          <TouchableOpacity style={{ ...styles.openButton, backgroundColor: '#32CD32', width:100,height:30,borderRadius:10,justifyContent:'center',alignContent:'center'}} onPress={onCancelAppointment}>
+            <Text style={styles.textStyle}>Sim</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ ...styles.openButton, backgroundColor: '#FF6347',  width:100,height:30,borderRadius:10,justifyContent:'center',alignContent:'center', margin:10 }}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.textStyle}>Não</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
 }
 
 export default ProfileScreen;
@@ -180,5 +221,47 @@ const styles = StyleSheet.create({
     position:'absolute',
     left:100,
     bottom:15,
-  }
+  },uncheckBtn: {
+      position: 'absolute',
+      top:20,
+      left:250,
+      borderRadius: 100,
+      width:30,
+      height:30,
+      justifyContent: 'center',
+      alignItems:'center',
+      backgroundColor:'black',
+  },
+  modalView: {
+    margin: 20,
+    backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 35,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+    elevation: 5,
+  },
+  buttonClose: {
+    backgroundColor: '#723172',
+  },
+  textStyle: {
+    color: 'white',
+    fontWeight: 'bold',
+    textAlign: 'center',
+  },
+  modalText: {
+    marginBottom: 15,
+    textAlign: 'center',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
 });
