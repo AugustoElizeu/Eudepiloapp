@@ -182,7 +182,7 @@ const styles = StyleSheet.create({
   picker: {
     margin: 10,
     height: 50,
-    width: 120,
+    width: 140,
     backgroundColor: '#e6e6e6',
   },
   calendar: {
