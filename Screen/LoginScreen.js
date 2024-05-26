@@ -10,6 +10,7 @@ async function handleLogin(email, password, navigation) {
   }
   const userData = JSON.parse(userDataString);
   if (userData.password === password) {
+    await AsyncStorage.setItem('currentUserEmail', email);
     navigation.reset({
       index: 0,
       routes: [{ name: 'MainScreen' }],
@@ -43,7 +44,7 @@ function LoginScreen({ navigation }) {
           value={password}
         />
         <View style={{ position: "relative", left: 80, bottom: 10 }}>
-          <Text style={{ color: '#0000ff' }} onPress={() => navigation.navigate('SignUpScreen')}>
+          <Text style={{ color: '#0000ff' }} onPress={() => ForgotScreen()}>
             Esqueceu Senha?
           </Text>
         </View>

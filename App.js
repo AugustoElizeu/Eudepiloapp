@@ -39,7 +39,7 @@ function HomeScr({navigation}){
 
      <View style={styles.footerx}>
                 <Text style={{color: 'white'}}>Trabalho realizado pela turma de desenvolviment mobile</Text>
-                <Text style={{color: 'white'}}>Augusto Elizeu,Ramon e Tamires - Abril/2024</Text>
+                <Text style={{color: 'white'}}>Augusto Elizeu,Ramon e Thamires - Maio/2024</Text>
       </View>
       <StatusBar style="auto"/>
     </View>

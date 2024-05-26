@@ -7,7 +7,7 @@ function isValidEmail(email) {
   return emailRegex.test(email);
 }
 
-async function handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF) {
+async function handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF, fotoPerfil) {
   if (password !== confirmPassword) {
     Alert.alert('Erro', 'As senhas não coincidem!');
     return;
@@ -24,7 +24,7 @@ async function handleSignUp(username, email, password, confirmPassword, phoneNum
     return;
   }
 
-  await AsyncStorage.setItem(email, JSON.stringify({ username, password, phoneNumber, CPF }));
+  await AsyncStorage.setItem(email, JSON.stringify({ username, password, phoneNumber, CPF, fotoPerfil }));
   Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
 }
 
@@ -91,6 +91,8 @@ function SignUpScreen({ navigation }) {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [CPF, setCPF] = useState('');
+  const patternImage = "https://avatarfiles.alphacoders.com/359/359671.jpeg"
+  const [fotoPerfil, setFotoPerfil] = useState(patternImage);
   return (
     <View style={styles.container}>
       <View>
@@ -135,7 +137,7 @@ function SignUpScreen({ navigation }) {
         />
         <TouchableOpacity
           style={styles.buttonCadastro}
-          onPress={() => handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF)}
+          onPress={() => handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF, fotoPerfil)}
         >
           <Text style={styles.buttonTextCadastro}>Cadastrar-se</Text>
         </TouchableOpacity>

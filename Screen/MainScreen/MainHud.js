@@ -36,6 +36,7 @@ const RenderItem = ({ item, navigation }) => (
 
 function MainHud({ navigation }) {
   return (
+    
     <View style={styles.container}>
       <Text style={{ marginTop: 40, fontSize: 30, fontFamily: 'Roboto', margin: 21 }}>Avisos</Text>
       <Image style={styles.banner1} source={{ uri: "https://www.sindimetal.com.br/wp-content/uploads/2016/05/feriado-Corpus-Christi.jpg" }} />

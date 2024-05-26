@@ -2,7 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TouchableOpacity, Modal, Pressable, Alert } from 'react-native';
 import { Calendar } from 'react-native-calendars';
 import { Picker } from '@react-native-picker/picker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { depilacao, sobrancelha, esteticaFacial, cabelo, Outros } from './Data';
+
 
 function Agendamento({ route }) {
   const [selectedValue, setSelectedValue] = useState('12:00');
@@ -14,7 +16,6 @@ function Agendamento({ route }) {
   const { item } = route.params;
 
   useEffect(() => {
-    // Map the item.title to the corresponding service list
     const mapServiceOptions = () => {
       switch (item.title) {
         case 'Depilação':
@@ -45,26 +46,61 @@ function Agendamento({ route }) {
   };
 
   const today = new Date();
-  const minDate = today.toISOString().split('T')[0]; // Formato yyyy-MM-dd
+  const minDate = today.toISOString().split('T')[0];
 
   const formatDate = (date) => {
     return new Date(date).toLocaleDateString('pt-BR');
   };
 
-  const handleAgendar = () => {
+  const handleAgendar = async () => {
     if (!selectedDate || !selectedValue || !selectedValue1) {
       Alert.alert('Erro', 'Por favor, selecione uma data, horário e serviço.');
       return;
     }
 
-    const agendamento = {
-      data: selectedDate,
-      horario: selectedValue,
-      servico: selectedValue1,
-    };
+    try {
+      const currentUserEmail = await AsyncStorage.getItem('currentUserEmail');
+      if (!currentUserEmail) {
+        Alert.alert('Erro', 'Usuário não encontrado.');
+        return;
+      }
 
-    // Aqui você pode salvar o agendamento em algum lugar, por exemplo, AsyncStorage ou uma API
-    setModalVisible(true);
+      const allKeys = await AsyncStorage.getAllKeys();
+      const userAgendamentos = allKeys.filter(key => key.startsWith(`${currentUserEmail}-`));
+      const existingAgendamentos = await Promise.all(
+        userAgendamentos.map(async (key) => {
+          const agendamentoJSON = await AsyncStorage.getItem(key);
+          return JSON.parse(agendamentoJSON);
+        })
+      );
+
+      const agendamentoConflitante = existingAgendamentos.find(
+        (agendamento) => agendamento.data === selectedDate && agendamento.horario === selectedValue
+      );
+
+      if (agendamentoConflitante) {
+        Alert.alert('Erro', 'Já existe um agendamento para esta data e horário. Por favor, escolha outra data ou horário.');
+        return;
+      }
+
+      const agendamento = {
+        data: selectedDate,
+        horario: selectedValue,
+        servico: selectedValue1,
+        userEmail: currentUserEmail,
+      };
+
+      const agendamentoJSON = JSON.stringify(agendamento);
+      const chaveAgendamento = `${currentUserEmail}-${selectedDate}-${selectedValue}-${selectedValue1}`;
+      await AsyncStorage.setItem(chaveAgendamento, agendamentoJSON);
+      setModalVisible(true);
+      setTimeout(() => {
+        setModalVisible(false);
+      }, 2300);
+    } catch (error) {
+      console.error('Erro ao salvar o agendamento:', error);
+      Alert.alert('Erro', 'Não foi possível salvar o agendamento.');
+    }
   };
 
   return (
@@ -104,17 +140,18 @@ function Agendamento({ route }) {
         transparent={true}
         visible={modalVisible}
         onRequestClose={() => {
-          Alert.alert('Modal has been closed.');
           setModalVisible(!modalVisible);
         }}>
         <View style={styles.centeredView}>
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Consulta Marcada</Text>
-            <Text style={styles.modalText}>Dia {formatDate(selectedDate)} às {selectedValue}</Text>
+            <Text style={styles.modalText}>Dia {selectedDate} às {selectedValue}</Text>
             <Text>{selectedValue1}</Text>
             <Pressable
               style={[styles.button, styles.buttonClose]}
-              onPress={() => setModalVisible(!modalVisible)}>
+              onPress={async () => {
+    setModalVisible(false);
+  }}>
               <Text style={styles.textStyle}>Fechar</Text>
             </Pressable>
           </View>
@@ -127,6 +164,7 @@ function Agendamento({ route }) {
     </View>
   );
 }
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -164,7 +202,6 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 20,
     padding: 35,
-    top: '50%',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -186,6 +223,11 @@ const styles = StyleSheet.create({
   modalText: {
     marginBottom: 15,
     textAlign: 'center',
+  },
+  centeredView: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
