@@ -146,6 +146,15 @@ const handleSelectImage = async () => {
         ...prevState,
         fotoPerfil: imageUrl,
       }));
+      
+       // Atualiza o AsyncStorage com a nova foto de perfil
+      const currentUserEmail = await AsyncStorage.getItem('currentUserEmail');
+      const userDataJSON = await AsyncStorage.getItem(currentUserEmail);
+      const userData = JSON.parse(userDataJSON);
+      userData.fotoPerfil = imageUrl;
+      await AsyncStorage.setItem(currentUserEmail, JSON.stringify(userData));
+      
+      
       if (pickerResult.uri) {
         await AsyncStorage.removeItem('fotoPerfil', imageUrl);
       } else {
@@ -156,7 +165,6 @@ const handleSelectImage = async () => {
     console.error('Erro ao selecionar a imagem:', error);
   }
 };
-
 
   return (
     <View style={styles.profileScreen}>
