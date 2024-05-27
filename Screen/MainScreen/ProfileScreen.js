@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -17,7 +18,7 @@ function ProfileScreen({ navigation }) {
   const [agendamentos, setAgendamentos] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [cancelIndex, setCancelIndex] = useState(null);
-
+  
   useEffect(() => {
     loadUserData();
     loadAgendamentos();
@@ -78,7 +79,7 @@ function ProfileScreen({ navigation }) {
     </View>
   );
 
-  const handleCancelAgendamento = async () => {
+ const handleCancelAgendamento = async () => {
   try {
     const currentUserEmail = await AsyncStorage.getItem('currentUserEmail');
     const agendamentoKey = `${currentUserEmail}-${cancelIndex}`;
@@ -86,25 +87,80 @@ function ProfileScreen({ navigation }) {
     setModalVisible(false);
     Alert.alert('Consulta Cancelada', 'A consulta foi cancelada com sucesso.');
 
-    // Removendo o agendamento diretamente do estado agendamentos
-    setAgendamentos((prevAgendamentos) => {
-      const updatedAgendamentos = prevAgendamentos.filter((item, index) => index !== cancelIndex);
-      return updatedAgendamentos;
+    // Atualizando o estado agendamentos após a remoção do item
+    setAgendamentos(prevAgendamentos => {
+      return prevAgendamentos.filter((item, index) => index !== cancelIndex);
     });
   } catch (error) {
     console.error('Erro ao cancelar a consulta:', error);
   }
 };
 
-  const handleSelectImage = async () => {
-    // Código para seleção de imagem...
-  };
+const extractImageUriFromPickerResult = (pickerResultString) => {
+  try {
+    // Procurar a posição do início da URL da imagem
+    const start = pickerResultString.indexOf('file://');
+    if (start !== -1) {
+      // Encontrou a posição inicial, agora encontrar o final da URL
+      const end = pickerResultString.indexOf('"', start);
+      if (end !== -1) {
+        // Extrair a URL da imagem usando substring
+        const imageUrl = pickerResultString.substring(start, end);
+        return imageUrl;
+      }
+    }
+    // Se não encontrar a URL, retorna null
+    return null;
+  } catch (error) {
+    console.error('Erro ao extrair a URL da imagem:', error);
+    return null;
+  }
+};
+
+const handleSelectImage = async () => {
+  try {
+    const permissionResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+    if (permissionResult.granted === false) {
+      alert('Permissão para acessar a galeria é necessária!');
+      return;
+    }
+
+    const pickerResult = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 1,
+      allowsEditing: true,
+      aspect: [3, 3],
+    });
+
+    // Transformando pickerResult em uma string JSON
+    const pickerResultString = JSON.stringify(pickerResult);
+    // Acessando a URL da imagem
+    const imageUrl = extractImageUriFromPickerResult(pickerResultString);
+    console.log('Image URL:', imageUrl);
+
+    if (!pickerResult.cancelled && imageUrl) {
+      // Atualizando o estado do usuário com a nova foto de perfil
+      setUserData(prevState => ({
+        ...prevState,
+        fotoPerfil: imageUrl,
+      }));
+      if (pickerResult.uri) {
+        await AsyncStorage.setItem('userProfilePicture', imageUrl);
+      } else {
+        await AsyncStorage.removeItem('userProfilePicture');
+      }
+    }
+  } catch (error) {
+    console.error('Erro ao selecionar a imagem:', error);
+  }
+};
+
 
   return (
     <View style={styles.profileScreen}>
       <View style={styles.userData}>
         <TouchableOpacity onPress={handleSelectImage}>
-          <Image style={styles.profilePicture} source={{ uri: userData.fotoPerfil }} />
+          <Image style={styles.profilePicture} source={userData.fotoPerfil ? { uri: userData.fotoPerfil } : require('../imgs2/patternimage.jpeg')} />
           <FontAwesome name={'plus'} size={25} color={'#901090'} style={styles.iconPosition} />
         </TouchableOpacity>
         <View style={{ top: 60, left: 10 }}>
