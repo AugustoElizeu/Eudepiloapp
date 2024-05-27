@@ -84,6 +84,7 @@ function ProfileScreen({ navigation }) {
     const currentUserEmail = await AsyncStorage.getItem('currentUserEmail');
     const agendamentoKey = `${currentUserEmail}-${cancelIndex}`;
     await AsyncStorage.removeItem(agendamentoKey);
+    console.log(agendamentoKey)
     setModalVisible(false);
     Alert.alert('Consulta Cancelada', 'A consulta foi cancelada com sucesso.');
 
@@ -134,6 +135,7 @@ const handleSelectImage = async () => {
 
     // Transformando pickerResult em uma string JSON
     const pickerResultString = JSON.stringify(pickerResult);
+    console.log(pickerResultString);
     // Acessando a URL da imagem
     const imageUrl = extractImageUriFromPickerResult(pickerResultString);
     console.log('Image URL:', imageUrl);
@@ -145,9 +147,9 @@ const handleSelectImage = async () => {
         fotoPerfil: imageUrl,
       }));
       if (pickerResult.uri) {
-        await AsyncStorage.setItem('userProfilePicture', imageUrl);
+        await AsyncStorage.removeItem('fotoPerfil', imageUrl);
       } else {
-        await AsyncStorage.removeItem('userProfilePicture');
+        await AsyncStorage.removeItem('fotoPerfil');
       }
     }
   } catch (error) {
@@ -160,8 +162,8 @@ const handleSelectImage = async () => {
     <View style={styles.profileScreen}>
       <View style={styles.userData}>
         <TouchableOpacity onPress={handleSelectImage}>
-          <Image style={styles.profilePicture} source={userData.fotoPerfil ? { uri: userData.fotoPerfil } : require('../imgs2/patternimage.jpeg')} />
-          <FontAwesome name={'plus'} size={25} color={'#901090'} style={styles.iconPosition} />
+          <Image style={styles.profilePicture} source={userData.fotoPerfil ? { uri: userData.fotoPerfil } : require('../../imgs/patternimage.jpeg')} />
+          <FontAwesome name={'plus'} size={25} color={'#D600E6'} style={styles.iconPosition} />
         </TouchableOpacity>
         <View style={{ top: 60, left: 10 }}>
           <Text>Nome do usuário: {userData.username}</Text>
@@ -232,6 +234,8 @@ const styles = StyleSheet.create({
     margin: 20,
     marginRight: 20,
     marginTop: 50,
+    borderWidth: 2,
+    borderColor: 'purple',
   },
   userData: {
     right: 50,
@@ -302,9 +306,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  },
-  buttonClose: {
-    backgroundColor: '#723172',
   },
   textStyle: {
     color: 'white',

@@ -32,8 +32,8 @@ function HomeScr({navigation}){
     
     <View style={styles.lineStr}>
             <Text style={{marginRight:5}}>Não possui conta?</Text>
-            <TouchableOpacity>
-               <Text style={{ color: 'blue' }} onPress={() => navigation.navigate('SignUpScreen')}>Clique aqui e cadastre-se</Text>
+            <TouchableOpacity style={styles.textSignStyle} onPress={() => navigation.navigate('Sign')}>
+               <Text style={{ color: 'blue' }}>Clique aqui e cadastre-se</Text>
              </TouchableOpacity>
      </View>
 
@@ -53,8 +53,8 @@ function App(){
   <NavigationContainer>
   <Stack.Navigator initialRouteName="HomeScr">
     <Stack.Screen name="HomeScr" component={HomeScr} options={{ headerShown: false }} />
-    <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerTitle: '' }} />
-    <Stack.Screen name="SignUpScreen" component={SignUpScreen} options={{ headerTitle: '' }} />
+    <Stack.Screen name="LoginScreen" component={LoginScreen} options={{ headerTitle: 'Login' }} />
+    <Stack.Screen name="Sign" component={SignUpScreen} options={{ headerTitle: 'Cadastrar' }} />
     <Stack.Screen name="Agendamento" component={Agendamento} options={{ headerTitle: 'Agendar' }} />
     <Stack.Screen name="MainScreen" component={MTabs} options={{ headerShown: false }} />
   </Stack.Navigator>

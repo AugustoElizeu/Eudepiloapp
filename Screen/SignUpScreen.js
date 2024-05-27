@@ -1,16 +1,21 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {CommonActions} from '@react-navigation/native';
 
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
 }
 
-async function handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF, fotoPerfil) {
-  if (password !== confirmPassword) {
+async function handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF, fotoPerfil,navigation) {
+  if (password !== confirmPassword)  {
     Alert.alert('Erro', 'As senhas não coincidem!');
     return;
+  }
+  
+  if(password === ""){
+    Alert.alert('Erro', 'Digite uma senha válida!');
   }
    
   if (!isValidEmail(email)) {
@@ -26,6 +31,8 @@ async function handleSignUp(username, email, password, confirmPassword, phoneNum
 
   await AsyncStorage.setItem(email, JSON.stringify({ username, password, phoneNumber, CPF, fotoPerfil }));
   Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
+  navigation.replace("LoginScreen");
+  console.log('success')
 }
 
 function PhoneInput({ phoneNumber, setPhoneNumber, CPF, setCPF }) {
@@ -137,7 +144,7 @@ function SignUpScreen({ navigation }) {
         />
         <TouchableOpacity
           style={styles.buttonCadastro}
-          onPress={() => handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF, fotoPerfil)}
+          onPress={() => {handleSignUp(username, email, password, confirmPassword, phoneNumber, CPF, fotoPerfil,navigation)}}
         >
           <Text style={styles.buttonTextCadastro}>Cadastrar-se</Text>
         </TouchableOpacity>
