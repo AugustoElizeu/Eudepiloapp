@@ -8,7 +8,9 @@ async function handleLogin(email, password, navigation) {
     window.alert('Senha e/ou usuário incorreto(s)');
     return;
   }
-  const userData = JSON.parse(userDataString);
+const userData = JSON.parse(userDataString);
+
+  // Comparar a senha criptografada com a senha armazenada
   if (userData.password === password) {
     await AsyncStorage.setItem('currentUserEmail', email);
     navigation.reset({

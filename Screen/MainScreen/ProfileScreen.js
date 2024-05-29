@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, Modal, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -16,8 +15,10 @@ function ProfileScreen({ navigation }) {
   });
 
   const [agendamentos, setAgendamentos] = useState([]);
-  const [modalVisible, setModalVisible] = useState(false);
   const [cancelIndex, setCancelIndex] = useState(null);
+
+  const [cancelModalVisible, setCancelModalVisible] = useState(false);
+  const [logoffModalVisible, setLogoffModalVisible] = useState(false);
   
   useEffect(() => {
     loadUserData();
@@ -70,7 +71,7 @@ function ProfileScreen({ navigation }) {
       <TouchableOpacity
         style={styles.uncheckBtn}
         onPress={() => {
-          setModalVisible(true);
+          setCancelModalVisible(true);
           setCancelIndex(index);
         }}
       >
@@ -79,13 +80,16 @@ function ProfileScreen({ navigation }) {
     </View>
   );
 
- const handleCancelAgendamento = async () => {
+const handleCancelAgendamento = async () => {
   try {
     const currentUserEmail = await AsyncStorage.getItem('currentUserEmail');
-    const agendamentoKey = `${currentUserEmail}-${cancelIndex}`;
+    const agendamento = agendamentos[cancelIndex];
+    const agendamentoKey = `${currentUserEmail}-${agendamento.data}-${agendamento.horario}-${agendamento.servico}`;
+    
     await AsyncStorage.removeItem(agendamentoKey);
-    console.log(agendamentoKey)
-    setModalVisible(false);
+    console.log(`Removendo agendamento: ${agendamentoKey}`);
+
+    setCancelModalVisible(false);
     Alert.alert('Consulta Cancelada', 'A consulta foi cancelada com sucesso.');
 
     // Atualizando o estado agendamentos após a remoção do item
@@ -95,6 +99,11 @@ function ProfileScreen({ navigation }) {
   } catch (error) {
     console.error('Erro ao cancelar a consulta:', error);
   }
+};
+
+const handleLogoff = () => {
+  // Implemente a lógica de logout aqui
+  setLogoffModalVisible(false); // Fecha o modal de logoff após o logout
 };
 
 const extractImageUriFromPickerResult = (pickerResultString) => {
@@ -179,7 +188,7 @@ const handleSelectImage = async () => {
           <Text>CPF.: {userData.CPF}</Text>
           <Text>Telefone: {userData.phoneNumber}</Text>
         </View>
-        <TouchableOpacity style={styles.buttonLeave} onPress={() => navigation.navigate('HomeScr')}>
+        <TouchableOpacity style={styles.buttonLeave} onPress={() => setLogoffModalVisible(true)}>
           <FontAwesome name={'sign-out'} size={30} color={'black'} />
           <Text style={styles.relactiveText}>Log-off</Text>
         </TouchableOpacity>
@@ -193,11 +202,18 @@ const handleSelectImage = async () => {
           numColumns={1}
         />
       </View>
+      {/* Modal de cancelamento de agendamento */}
       <CancelAppointmentModal
-        modalVisible={modalVisible}
-        setModalVisible={setModalVisible}
-        cancelIndex={cancelIndex}
+        modalVisible={cancelModalVisible}
+        setModalVisible={setCancelModalVisible}
         onCancelAppointment={handleCancelAgendamento}
+      />
+      {/* Modal de logoff */}
+      <LogoffModal
+        modalVisible={logoffModalVisible}
+        setModalVisible={setLogoffModalVisible}
+        navigation={navigation}
+        onLogoff={handleLogoff}
       />
     </View>
   );
@@ -216,11 +232,46 @@ function CancelAppointmentModal({ modalVisible, setModalVisible, onCancelAppoint
       <View style={styles.centeredView}>
         <View style={styles.modalView}>
           <Text style={styles.modalText}>Deseja cancelar esta consulta?</Text>
-          <TouchableOpacity style={{ ...styles.openButton, backgroundColor: '#32CD32', width:100,height:30,borderRadius:10,justifyContent:'center',alignContent:'center'}} onPress={onCancelAppointment}>
+          <TouchableOpacity style={{ ...styles.openButton, backgroundColor: '#32CD32', width:200,height:40,borderRadius:10,justifyContent:'center',alignContent:'center'}} onPress={onCancelAppointment}>
             <Text style={styles.textStyle}>Sim</Text>
           </TouchableOpacity>
           <TouchableOpacity
-            style={{ ...styles.openButton, backgroundColor: '#FF6347',  width:100,height:30,borderRadius:10,justifyContent:'center',alignContent:'center', margin:10 }}
+            style={{ ...styles.openButton, backgroundColor: '#FF6347',  width:200,height:40,borderRadius:10,justifyContent:'center',alignContent:'center', margin:10 }}
+            onPress={() => setModalVisible(false)}
+          >
+            <Text style={styles.textStyle}>Não</Text>
+          </TouchableOpacity>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+
+function LogoffModal({ modalVisible, setModalVisible, navigation }) {
+  const naviReset = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'HomeScr' }],
+    });
+  };
+  return (
+    <Modal
+    animationType="slide"
+      transparent={true}
+      visible={modalVisible}
+      onRequestClose={() => {
+        setModalVisible(false);
+      }}
+    >
+      <View style={styles.centeredView}>
+        <View style={styles.modalView}>
+          <Text style={styles.modalText}>Tem certeza que deseja sair?</Text>
+          <TouchableOpacity style={{ ...styles.openButton, backgroundColor: '#32CD32', width:200,height:40,borderRadius:10,justifyContent:'center',alignContent:'center'}} onPress={() => naviReset()}>
+            <Text style={styles.textStyle}>Sim</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={{ ...styles.openButton, backgroundColor: '#FF6347',   width:200,height:40,borderRadius:10,justifyContent:'center',alignContent:'center', margin:10 }}
             onPress={() => setModalVisible(false)}
           >
             <Text style={styles.textStyle}>Não</Text>
@@ -304,6 +355,7 @@ const styles = StyleSheet.create({
     margin: 20,
     backgroundColor: 'white',
     borderRadius: 20,
+    width:300,
     padding: 35,
     alignItems: 'center',
     shadowColor: '#000',
@@ -319,9 +371,11 @@ const styles = StyleSheet.create({
     color: 'white',
     fontWeight: 'bold',
     textAlign: 'center',
+    fontSize:16,
   },
   modalText: {
-    marginBottom: 15,
+    marginBottom: 30,
+    fontSize:16,
     textAlign: 'center',
   },
   centeredView: {
