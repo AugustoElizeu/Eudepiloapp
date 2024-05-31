@@ -1,6 +1,7 @@
 import React from 'react';
 import { View, Text, StyleSheet, Button,TextInput,TouchableOpacity } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import bcrypt from 'react-native-bcrypt';
 
 async function handleLogin(email, password, navigation) {
   const userDataString = await AsyncStorage.getItem(email);
@@ -9,9 +10,8 @@ async function handleLogin(email, password, navigation) {
     return;
   }
 const userData = JSON.parse(userDataString);
-
-  // Comparar a senha criptografada com a senha armazenada
-  if (userData.password === password) {
+  const passwordMatch = bcrypt.compareSync(password, userData.password);
+  if (passwordMatch) {
     await AsyncStorage.setItem('currentUserEmail', email);
     navigation.reset({
       index: 0,

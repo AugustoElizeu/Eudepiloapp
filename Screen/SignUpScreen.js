@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet, TextInput, TouchableOpacity, Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import {CommonActions} from '@react-navigation/native';
+import bcrypt from 'react-native-bcrypt';
 
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -28,11 +29,13 @@ async function handleSignUp(username, email, password, confirmPassword, phoneNum
     Alert.alert('Erro', 'Este e-mail já está cadastrado!');
     return;
   }
+ const salt = bcrypt.genSaltSync(10);
+  const hashedPassword = bcrypt.hashSync(password, salt);
 
-  await AsyncStorage.setItem(email, JSON.stringify({ username, password, phoneNumber, CPF, fotoPerfil }));
+  await AsyncStorage.setItem(email, JSON.stringify({ username, password: hashedPassword, phoneNumber, CPF, fotoPerfil }));
   Alert.alert('Sucesso', 'Usuário cadastrado com sucesso!');
   navigation.replace("LoginScreen");
-  console.log('success')
+  console.log('success');
 }
 
 function PhoneInput({ phoneNumber, setPhoneNumber, CPF, setCPF }) {
